@@ -9,8 +9,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardContainer;
 
-import static frc.swervelib.ctre.CtreUtils.checkCtreError;
-
 public final class Falcon500SteerControllerFactoryBuilder {
     private static final int CAN_TIMEOUT_MS = 250;
     private static final int STATUS_FRAME_GENERAL_PERIOD_MS = 250;
@@ -119,33 +117,21 @@ public final class Falcon500SteerControllerFactoryBuilder {
             }
 
             WPI_TalonFX motor = new WPI_TalonFX(steerConfiguration.getMotorPort());
-            checkCtreError(motor.configAllSettings(motorConfiguration, CAN_TIMEOUT_MS), "Failed to configure Falcon 500 settings");
-
+            
             if (hasVoltageCompensation()) {
                 motor.enableVoltageCompensation(true);
             }
-            checkCtreError(motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, CAN_TIMEOUT_MS), "Failed to set Falcon 500 feedback sensor");
-            motor.setSensorPhase(!moduleConfiguration.isSteerInverted());
+                        motor.setSensorPhase(!moduleConfiguration.isSteerInverted());
             motor.setInverted(TalonFXInvertType.CounterClockwise);
             motor.setNeutralMode(NeutralMode.Brake);
 
-            checkCtreError(motor.setSelectedSensorPosition(absoluteEncoder.getAbsoluteAngle() / sensorPositionCoefficient, 0, CAN_TIMEOUT_MS), "Failed to set Falcon 500 encoder position");
-
+            
             
 
             // Reduce CAN status frame rates on real robots
             // Don't do this in simulation, or it causes lag and quantization of the voltage
             // signals which cause the sim model to be inaccurate and unstable.
-            CtreUtils.checkCtreError(
-                    motor.setStatusFramePeriod(
-                            StatusFrameEnhanced.Status_1_General,
-                            RobotBase.isSimulation()?20:STATUS_FRAME_GENERAL_PERIOD_MS,
-                            CAN_TIMEOUT_MS
-                    ),
-                    "Failed to configure Falcon status frame period"
-            );
-
-            return new ControllerImplementation(motor,
+                        return new ControllerImplementation(motor,
                     sensorPositionCoefficient,
                     sensorVelocityCoefficient,
                     hasMotionMagic() ? TalonFXControlMode.MotionMagic : TalonFXControlMode.Position,
